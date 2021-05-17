@@ -2,8 +2,7 @@ import re
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import BaggingClassifier
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
 
@@ -33,8 +32,6 @@ test_sex_mappings = {index: label for index, label in enumerate(le.classes_)}
 train_test = [train, test]
 for data in train_test:
     data['FamilySize'] = data['SibSp'] + data['Parch'] + 1
-    data['IsAlone'] = 0
-    data.loc[data['FamilySize'] == 1, 'IsAlone'] =1
 
 
 def get_title(name):
@@ -63,8 +60,9 @@ X = pd.get_dummies(train[features])
 y = train['Survived']
 X_test = pd.get_dummies(test[features])
 
-bagging = BaggingClassifier(KNeighborsClassifier(), max_samples=0.5, max_features=0.5)
-bagging.fit(X, y)
-survived = bagging.predict(X_test)
+clf = AdaBoostClassifier(n_estimators=100)
+clf.fit(X, y)
+
+survived = clf.predict(X_test)
 survivor_dict = {'PassengerId': list(test['PassengerId']), 'Survived': list(survived)}
 survivor_df = pd.DataFrame(survivor_dict, columns=['PassengerId', 'Survived'])
